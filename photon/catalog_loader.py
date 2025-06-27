@@ -13,7 +13,8 @@ class CatalogLoader(QThread):
 
     def run(self):
         try:
-            catalog = self.catalog_reader.load_catalog_async(self.catalog_path)
+            import asyncio
+            catalog = asyncio.run(self.catalog_reader.load_catalog_async(self.catalog_path))
             self.catalog_loaded.emit(catalog)
         except Exception as e:
             self.error_occurred.emit(f"Error loading catalog: {e}")
