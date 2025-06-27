@@ -23,10 +23,18 @@ This file tracks the development progress of the Photon application.
     *   Connected `FolderTreeView`, `ThumbnailGridView`, and `PhotoPreviewView` to receive `LightroomCatalog` data.
     *   Refined the dark theme QSS for a more polished look.
     *   Set up a central welcome message widget.
+*   **UI Implementation (Phase 4 - Views and Interaction):**
+    *   Implemented `FolderTreeView` to display folder hierarchy.
+    *   Implemented `ThumbnailGridView` using `QListView` and a custom model for efficient thumbnail display.
+    *   Implemented `PhotoPreviewView` to display selected photo and its metadata.
+    *   Implemented interaction between views: folder selection updates thumbnail grid, thumbnail selection updates photo preview.
+    *   Added basic keyboard navigation (left/right arrows) for photos.
+    *   Implemented basic culling actions (pick/reject, 0-5 star rating) with keyboard shortcuts.
 
 ## Next Steps:
 
-*   **Implement Folder Tree View:** Populate `FolderTreeView` with actual folder hierarchy from `LightroomCatalog`.
-*   **Implement Thumbnail Grid View:** Display photo thumbnails in `ThumbnailGridView` with virtual scrolling.
-*   **Implement Photo Preview View:** Display selected photo and its metadata in `PhotoPreviewView`.
-*   **Interaction:** Implement basic keyboard navigation and culling actions.
+*   **Persistence of Culling Actions:** Implement saving of culling actions (ratings, pick/reject) back to the Lightroom catalog or a separate database.
+*   **Image Caching Optimization:** Further optimize image caching and loading for very large catalogs.
+*   **Error Handling and User Feedback:** Enhance error handling and provide more detailed user feedback for various operations.
+*   **UI Polish and Responsiveness:** Continue refining the UI, ensuring responsiveness across different window sizes.
+*   **Advanced Culling Features:** Implement more advanced culling features (e.g., color labels, flags, custom sorting).
