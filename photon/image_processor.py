@@ -2,13 +2,19 @@ import os
 from PIL import Image
 from typing import Optional, Tuple
 import hashlib
+from concurrent.futures import ThreadPoolExecutor
 
 class ImageProcessor:
+    _executor = ThreadPoolExecutor(max_workers=os.cpu_count() or 1)
+
     def __init__(self, cache_dir: str = "./cache/thumbnails"):
         self.cache_dir = cache_dir
         os.makedirs(self.cache_dir, exist_ok=True)
 
-    def generate_thumbnail(self, image_path: str, size: Tuple[int, int] = (256, 256)) -> Optional[str]:
+    def generate_thumbnail_async(self, image_path: str, size: Tuple[int, int] = (256, 256)):
+        return self._executor.submit(self._generate_thumbnail_sync, image_path, size)
+
+    def _generate_thumbnail_sync(self, image_path: str, size: Tuple[int, int]) -> Optional[str]:
         if not os.path.exists(image_path):
             return None
 
