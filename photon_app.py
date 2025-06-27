@@ -54,7 +54,16 @@ class PhotonApp(QMainWindow):
         self.folder_tree_view.model.modelReset.emit()
         self.thumbnail_grid_view.set_catalog(self.lightroom_catalog)
         self.photo_preview_view.set_catalog(self.lightroom_catalog)
-        print("Catalog loaded successfully into UI.")
+        self.central_label.setText("Catalog loaded successfully!")
+
+    def _on_folder_selected(self, folder_node: FolderNode):
+        if self.lightroom_catalog:
+            photos_in_folder = [photo for photo in self.lightroom_catalog.photos_by_id.values() if photo.folder_id == folder_node.id]
+            self.thumbnail_grid_view.model.set_photos(photos_in_folder)
+            self.photo_preview_view.set_current_photo(None) # Clear preview when folder changes
+
+    def _on_photo_selected(self, photo: PhotoMetadata):
+        self.photo_preview_view.set_current_photo(photo)
 
     def _on_catalog_error(self, message: str):
         QMessageBox.critical(self, "Catalog Loading Error", message)
@@ -82,6 +91,10 @@ class PhotonApp(QMainWindow):
         preview_dock.setAllowedAreas(Qt.DockWidgetArea.AllDockWidgetAreas)
         preview_dock.setWidget(self.photo_preview_view)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, preview_dock)
+
+        # Connect signals
+        self.folder_tree_view.folder_selected.connect(self._on_folder_selected)
+        self.thumbnail_grid_view.photo_selected.connect(self._on_photo_selected)
 
     def apply_dark_theme(self):
         self.setStyleSheet("""

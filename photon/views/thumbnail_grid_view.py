@@ -1,10 +1,12 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QListView
-from PyQt6.QtCore import Qt
-from photon.models import LightroomCatalog
+from PyQt6.QtCore import Qt, pyqtSignal
+from photon.models import LightroomCatalog, PhotoMetadata
 from photon.image_processor import ImageProcessor
 from photon.views.thumbnail_grid_model import ThumbnailGridModel
 
 class ThumbnailGridView(QWidget):
+    photo_selected = pyqtSignal(PhotoMetadata)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.catalog = None
@@ -22,6 +24,7 @@ class ThumbnailGridView(QWidget):
 
         self.model = ThumbnailGridModel([], self.image_processor)
         self.list_view.setModel(self.model)
+        self.list_view.clicked.connect(self._on_thumbnail_clicked)
 
         layout.addWidget(self.list_view)
         self.setLayout(layout)
@@ -52,3 +55,9 @@ class ThumbnailGridView(QWidget):
             self.model.set_photos(list(self.catalog.photos_by_id.values()))
         else:
             self.model.set_photos([])
+
+    def _on_thumbnail_clicked(self, index):
+        if index.isValid():
+            photo = self.model.data(index, Qt.ItemDataRole.UserRole)
+            if isinstance(photo, PhotoMetadata):
+                self.photo_selected.emit(photo)
