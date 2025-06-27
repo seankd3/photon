@@ -113,24 +113,40 @@ class PhotonApp(QMainWindow):
         culling_menu.addAction(self.rate_0_action)
 
     def _next_photo(self):
-        print("Next photo")
-        # TODO: Implement logic to select the next photo in the thumbnail grid
+        current_index = self.thumbnail_grid_view.list_view.currentIndex()
+        if current_index.isValid():
+            next_row = current_index.row() + 1
+            if next_row < self.thumbnail_grid_view.model.rowCount():
+                next_index = self.thumbnail_grid_view.model.index(next_row, 0)
+                self.thumbnail_grid_view.list_view.setCurrentIndex(next_index)
+                self._on_photo_selected(self.thumbnail_grid_view.model.data(next_index, Qt.ItemDataRole.UserRole))
 
     def _prev_photo(self):
-        print("Previous photo")
-        # TODO: Implement logic to select the previous photo in the thumbnail grid
+        current_index = self.thumbnail_grid_view.list_view.currentIndex()
+        if current_index.isValid():
+            prev_row = current_index.row() - 1
+            if prev_row >= 0:
+                prev_index = self.thumbnail_grid_view.model.index(prev_row, 0)
+                self.thumbnail_grid_view.list_view.setCurrentIndex(prev_index)
+                self._on_photo_selected(self.thumbnail_grid_view.model.data(prev_index, Qt.ItemDataRole.UserRole))
 
     def _pick_photo(self):
-        print("Pick photo")
-        # TODO: Implement logic to mark the current photo as picked
+        if self.photo_preview_view.current_photo:
+            self.photo_preview_view.current_photo.is_picked = not self.photo_preview_view.current_photo.is_picked
+            self.photo_preview_view.set_current_photo(self.photo_preview_view.current_photo) # Refresh view
 
     def _reject_photo(self):
-        print("Reject photo")
-        # TODO: Implement logic to mark the current photo as rejected
+        if self.photo_preview_view.current_photo:
+            # For simplicity, reject can be inverse of pick, or a separate flag
+            # Here, let's set rating to 0 and pick to False for 'reject'
+            self.photo_preview_view.current_photo.rating = 0
+            self.photo_preview_view.current_photo.is_picked = False
+            self.photo_preview_view.set_current_photo(self.photo_preview_view.current_photo) # Refresh view
 
     def _rate_photo(self, rating: int):
-        print(f"Rate photo: {rating} stars")
-        # TODO: Implement logic to set the rating of the current photo
+        if self.photo_preview_view.current_photo:
+            self.photo_preview_view.current_photo.rating = rating
+            self.photo_preview_view.set_current_photo(self.photo_preview_view.current_photo) # Refresh view
 
     def load_catalog(self, catalog_path: str):
         if not os.path.exists(catalog_path):
