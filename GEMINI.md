@@ -30,10 +30,12 @@ This file tracks the development progress of the Photon application.
     *   Implemented interaction between views: folder selection updates thumbnail grid, thumbnail selection updates photo preview.
     *   Added basic keyboard navigation (left/right arrows) for photos.
     *   Implemented basic culling actions (pick/reject, 0-5 star rating) with keyboard shortcuts.
+*   **Data Persistence:**
+    *   Implemented `CullingDatabase` to store culling actions (ratings, pick/reject) in a separate SQLite database.
+    *   Integrated `CullingDatabase` into `photon_app.py` to save and load culling data, ensuring non-destructive editing.
 
 ## Next Steps:
 
-*   **Persistence of Culling Actions:** Implement saving of culling actions (ratings, pick/reject) back to the Lightroom catalog or a separate database.
 *   **Image Caching Optimization:** Further optimize image caching and loading for very large catalogs.
 *   **Error Handling and User Feedback:** Enhance error handling and provide more detailed user feedback for various operations.
 *   **UI Polish and Responsiveness:** Continue refining the UI, ensuring responsiveness across different window sizes.
