@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QMainWindow, QDockWidget, QTextEdit, QWidget, QVBoxLayout, QMessageBox, QMenu
 from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtCore import Qt
+from photon.culling_db import CullingDatabase
 from photon.views.folder_tree_view import FolderTreeView
 from photon.views.thumbnail_grid_view import ThumbnailGridView
 from photon.views.photo_preview_view import PhotoPreviewView
@@ -26,6 +27,7 @@ class PhotonApp(QMainWindow):
         self.catalog_reader = LightroomCatalogReader()
         self.lightroom_catalog = None
         self.catalog_loader = None # Initialize to None
+        self.culling_db = CullingDatabase(os.path.join(os.path.dirname(__file__), "culling.db"))
 
         self.create_dock_widgets()
         self.apply_dark_theme()
@@ -130,23 +132,53 @@ class PhotonApp(QMainWindow):
                 self.thumbnail_grid_view.list_view.setCurrentIndex(prev_index)
                 self._on_photo_selected(self.thumbnail_grid_view.model.data(prev_index, Qt.ItemDataRole.UserRole))
 
+    self.photo_preview_view.set_catalog(self.lightroom_catalog)
+        self.central_label.setText("Catalog loaded successfully!")
+
+        # Apply culling data to photos
+        all_photo_ids = [photo.id for photo in self.lightroom_catalog.photos_by_id.values()]
+        culling_data = self.culling_db.load_culling_data(all_photo_ids)
+        for photo_id, data in culling_data.items():
+            if photo_id in self.lightroom_catalog.photos_by_id:
+                photo = self.lightroom_catalog.photos_by_id[photo_id]
+                photo.rating = data["rating"]
+                photo.is_picked = data["is_picked"]
+                photo.is_rejected = data["is_rejected"]
+                photo.color_label = data["color_label"]
+
+    def _on_folder_selected(self, folder_node: FolderNode):
+        if self.lightroom_catalog:
+            photos_in_folder = [photo for photo in self.lightroom_catalog.photos_by_id.values() if photo.folder_id == folder_node.id]
+            self.thumbnail_grid_view.model.set_photos(photos_in_folder)
+            self.photo_preview_view.set_current_photo(None) # Clear preview when folder changes
+
+    def _on_photo_selected(self, photo: PhotoMetadata):
+        self.photo_preview_view.set_current_photo(photo)
+
     def _pick_photo(self):
         if self.photo_preview_view.current_photo:
-            self.photo_preview_view.current_photo.is_picked = not self.photo_preview_view.current_photo.is_picked
-            self.photo_preview_view.set_current_photo(self.photo_preview_view.current_photo) # Refresh view
+            photo = self.photo_preview_view.current_photo
+            photo.is_picked = not photo.is_picked
+            self.culling_db.save_culling_data(photo.id, photo.rating, photo.is_picked, photo.is_rejected, photo.color_label)
+            self.photo_preview_view.set_current_photo(photo) # Refresh view
 
     def _reject_photo(self):
         if self.photo_preview_view.current_photo:
-            # For simplicity, reject can be inverse of pick, or a separate flag
-            # Here, let's set rating to 0 and pick to False for 'reject'
-            self.photo_preview_view.current_photo.rating = 0
-            self.photo_preview_view.current_photo.is_picked = False
-            self.photo_preview_view.set_current_photo(self.photo_preview_view.current_photo) # Refresh view
+            photo = self.photo_preview_view.current_photo
+            photo.is_rejected = not photo.is_rejected
+            # Optionally, if rejecting implies not picking and 0 stars:
+            if photo.is_rejected:
+                photo.is_picked = False
+                photo.rating = 0
+            self.culling_db.save_culling_data(photo.id, photo.rating, photo.is_picked, photo.is_rejected, photo.color_label)
+            self.photo_preview_view.set_current_photo(photo) # Refresh view
 
     def _rate_photo(self, rating: int):
         if self.photo_preview_view.current_photo:
-            self.photo_preview_view.current_photo.rating = rating
-            self.photo_preview_view.set_current_photo(self.photo_preview_view.current_photo) # Refresh view
+            photo = self.photo_preview_view.current_photo
+            photo.rating = rating
+            self.culling_db.save_culling_data(photo.id, photo.rating, photo.is_picked, photo.is_rejected, photo.color_label)
+            self.photo_preview_view.set_current_photo(photo) # Refresh view
 
     def load_catalog(self, catalog_path: str):
         if not os.path.exists(catalog_path):
