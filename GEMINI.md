@@ -38,9 +38,10 @@ This file tracks the development progress of the Photon application.
     *   Added a placeholder image for failed thumbnail generation.
 *   **Bug Fixes:**
     *   Corrected asynchronous catalog loading in `CatalogLoader` by properly using `asyncio.run`.
+*   **Error Handling & User Feedback:**
+    *   Implemented loading messages and error displays in the central widget during catalog loading.
 
 ## Next Steps:
 
-*   **Error Handling and User Feedback:** Enhance error handling and provide more detailed user feedback for various operations.
 *   **UI Polish and Responsiveness:** Continue refining the UI, ensuring responsiveness across different window sizes.
 *   **Advanced Culling Features:** Implement more advanced culling features (e.g., color labels, flags, custom sorting).
