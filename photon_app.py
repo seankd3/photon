@@ -13,8 +13,13 @@ class PhotonApp(QMainWindow):
         super().__init__()
         self.setWindowTitle("Photon - Photo Culling Application")
         
-        # Central widget placeholder (can be hidden or used for status/welcome)
+        # Central widget for welcome message or status
+        self.central_label = QLabel("Welcome to Photon! Load a Lightroom catalog to begin.")
+        self.central_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.central_label.setStyleSheet("font-size: 24px; color: #AAAAAA;")
         central_widget = QWidget()
+        central_layout = QVBoxLayout(central_widget)
+        central_layout.addWidget(self.central_label)
         self.setCentralWidget(central_widget)
 
         self.catalog_reader = LightroomCatalogReader()
@@ -87,12 +92,22 @@ class PhotonApp(QMainWindow):
             QDockWidget {
                 background-color: #2D2D30;
                 color: #CCCCCC;
-                border: 2px solid #555555; /* Increased border thickness and color */
+                border: 1px solid #444444;
+                titlebar-close-icon: url(close.png);
+                titlebar-normal-icon: url(undock.png);
             }
             QDockWidget::title {
                 background-color: #3E3E40;
-                padding: 5px;
-                border-bottom: 1px solid #555555; /* Added bottom border to title */
+                padding: 4px;
+                border-bottom: 1px solid #444444;
+                font-weight: bold;
+            }
+            QDockWidget::close-button, QDockWidget::float-button {
+                background-color: #3E3E40;
+                border: none;
+            }
+            QDockWidget::close-button:hover, QDockWidget::float-button:hover {
+                background-color: #555555;
             }
             QTextEdit {
                 background-color: #2D2D30;
@@ -103,12 +118,17 @@ class PhotonApp(QMainWindow):
                 background-color: #1E1E1E;
                 color: #CCCCCC;
                 border: none;
+                selection-background-color: #3E3E40;
+                selection-color: #FFFFFF;
             }
             QTreeView::item {
                 padding: 3px;
             }
             QTreeView::item:selected {
                 background-color: #3E3E40;
+            }
+            QLabel {
+                color: #CCCCCC;
             }
         """)
 
