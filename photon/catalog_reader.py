@@ -104,39 +104,33 @@ class LightroomCatalogReader:
         folder_lookup: Dict[str, FolderNode] = {}
 
         cursor.execute("""
-            SELECT 
-                id_local as Id,
-                pathFromRoot as Name,
-                r.absolutePath as RootAbsolutePath
+            SELECT
+                f.id_local as Id,
+                f.pathFromRoot as PathFromRoot,
+                r.absolutePath as RootAbsolutePath,
+                f.parent as ParentId
             FROM AgLibraryFolder f
             JOIN AgLibraryRootFolder r ON f.rootFolder = r.id_local
             ORDER BY f.pathFromRoot
         """)
 
-        # Print column names for debugging
-        print("\n--- AgLibraryFolder Columns ---".encode('utf-8', 'replace').decode('utf-8'))
-        for col_info in cursor.description:
-            print(col_info[0].encode('utf-8', 'replace').decode('utf-8'))
-        print("-------------------------------".encode('utf-8', 'replace').decode('utf-8'))
+        # A temporary lookup to get the full path of a parent by its ID
+        path_lookup: Dict[str, str] = {}
 
         for row in cursor.fetchall():
             folder_id = str(row[0])
             path_from_root = row[1]
             root_abs_path = row[2] if row[2] else ""
-            
-            # For now, we'll assume parent is None and fix after schema inspection
-            parent_id = None 
+            parent_id = str(row[3]) if row[3] is not None else None
 
-            # Construct full path
             full_path = os.path.join(root_abs_path, path_from_root.lstrip('/'))
+            path_lookup[folder_id] = path_from_root
 
             folder_name = path_from_root
-            if parent_id is not None: # This is a child folder
-                parts = [p for p in path_from_root.split('/') if p]
-                if len(parts) > 0:
-                    folder_name = parts[-1] + ('/' if path_from_root.endswith('/') else '')
-                else:
-                    folder_name = ""
+            if parent_id and parent_id in path_lookup:
+                parent_path = path_lookup[parent_id]
+                if path_from_root.startswith(parent_path):
+                    folder_name = path_from_root[len(parent_path):]
 
             folder = FolderNode(
                 id=folder_id,
@@ -147,7 +141,7 @@ class LightroomCatalogReader:
             folders.append(folder)
             folder_lookup[folder.id] = folder
 
-        # Build hierarchy (will be incomplete without parent_id)
+        # Build hierarchy
         for folder in folders:
             if folder.parent_id and folder.parent_id in folder_lookup:
                 parent = folder_lookup[folder.parent_id]
