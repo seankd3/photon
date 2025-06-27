@@ -1,9 +1,10 @@
-from PyQt6.QtWidgets import QMainWindow, QDockWidget, QTextEdit, QWidget, QVBoxLayout
+from PyQt6.QtWidgets import QMainWindow, QDockWidget, QTextEdit, QWidget, QVBoxLayout, QMessageBox
 from PyQt6.QtCore import Qt
 from photon.views.folder_tree_view import FolderTreeView
 from photon.views.thumbnail_grid_view import ThumbnailGridView
 from photon.views.photo_preview_view import PhotoPreviewView
 from photon.catalog_reader import LightroomCatalogReader
+from photon.catalog_loader import CatalogLoader
 import asyncio
 import os
 
@@ -18,12 +19,41 @@ class PhotonApp(QMainWindow):
 
         self.catalog_reader = LightroomCatalogReader()
         self.lightroom_catalog = None
+        self.catalog_loader = None # Initialize to None
 
         self.create_dock_widgets()
         self.apply_dark_theme()
 
-        # Load the user's Lightroom catalog
-        self.load_catalog(r"C:\Pictures\Lightroom\Catalogs\2025\2025\2025.lrcat")
+        # Example: Load a catalog (this can be triggered by user action later)
+        # For now, we'll keep it commented out to avoid blocking during initial setup
+        # self.load_catalog(r"C:\Pictures\Lightroom\Catalogs\2025\2025\2025.lrcat")
+
+    def load_catalog(self, catalog_path: str):
+        if not os.path.exists(catalog_path):
+            QMessageBox.warning(self, "Catalog Not Found", f"The specified catalog path does not exist:\n{catalog_path}")
+            return
+
+        if self.catalog_loader and self.catalog_loader.isRunning():
+            QMessageBox.information(self, "Loading in Progress", "A catalog is already being loaded. Please wait.")
+            return
+
+        self.catalog_loader = CatalogLoader(catalog_path)
+        self.catalog_loader.catalog_loaded.connect(self._on_catalog_loaded)
+        self.catalog_loader.error_occurred.connect(self._on_catalog_error)
+        self.catalog_loader.start()
+        print(f"Started loading catalog from {catalog_path} in a separate thread.")
+
+    def _on_catalog_loaded(self, catalog: LightroomCatalog):
+        self.lightroom_catalog = catalog
+        self.folder_tree_view.model._root_folders = self.lightroom_catalog.root_folders
+        self.folder_tree_view.model.modelReset.emit()
+        print("Catalog loaded successfully into UI.")
+        # TODO: Pass catalog to ThumbnailGridView and PhotoPreviewView
+
+    def _on_catalog_error(self, message: str):
+        QMessageBox.critical(self, "Catalog Loading Error", message)
+        print(f"Error loading catalog: {message}")
+
 
     def create_dock_widgets(self):
         # Folder Tree Panel
