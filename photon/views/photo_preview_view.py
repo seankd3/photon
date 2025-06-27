@@ -1,15 +1,31 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel
-from PyQt6.QtCore import Qt
-from photon.models import LightroomCatalog
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QScrollArea
+from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtGui import QPixmap, QImage
+from photon.models import LightroomCatalog, PhotoMetadata
+from photon.image_processor import ImageProcessor
 
 class PhotoPreviewView(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.catalog = None
+        self.current_photo = None
+        self.image_processor = ImageProcessor()
+
         layout = QVBoxLayout(self)
-        self.label = QLabel("Photo Preview Content", self)
-        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.label)
+        
+        self.image_label = QLabel()
+        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.image_label.setScaledContents(False)
+
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setWidget(self.image_label)
+        layout.addWidget(self.scroll_area)
+
+        self.metadata_label = QLabel("No photo selected.")
+        self.metadata_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        layout.addWidget(self.metadata_label)
+
         self.setLayout(layout)
 
         self.setStyleSheet("""
@@ -18,11 +34,46 @@ class PhotoPreviewView(QWidget):
                 color: #CCCCCC;
                 border: none;
             }
+            QLabel {
+                color: #CCCCCC;
+            }
         """)
 
     def set_catalog(self, catalog: LightroomCatalog):
         self.catalog = catalog
-        if self.catalog:
-            self.label.setText(f"Photo Preview: {len(self.catalog.photos_by_id)} photos in catalog")
+        self.set_current_photo(None) # Clear preview when catalog changes
+
+    def set_current_photo(self, photo: PhotoMetadata):
+        self.current_photo = photo
+        if photo:
+            # Load and display image
+            image = self.image_processor.load_image(photo.file_path)
+            if image:
+                pixmap = QPixmap.fromImage(QImage(image.tobytes(), image.width, image.height, image.width * 3, QImage.Format.Format_RGB888))
+                self.image_label.setPixmap(pixmap.scaled(self.image_label.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+                self.image_label.adjustSize()
+            else:
+                self.image_label.clear()
+                self.image_label.setText("Could not load image.")
+
+            # Display metadata
+            metadata_text = f"<b>File:</b> {photo.file_name}.{photo.file_extension}<br>"
+            metadata_text += f"<b>Folder:</b> {photo.folder_id}<br>"
+            metadata_text += f"<b>Captured:</b> {photo.date_captured.strftime('%Y-%m-%d %H:%M:%S') if photo.date_captured else 'N/A'}<br>"
+            metadata_text += f"<b>Dimensions:</b> {photo.width}x{photo.height}<br>"
+            metadata_text += f"<b>Rating:</b> {photo.rating} stars<br>"
+            metadata_text += f"<b>Picked:</b> {'Yes' if photo.is_picked else 'No'}<br>"
+            metadata_text += f"<b>Camera:</b> {photo.camera_make} {photo.camera_model}<br>"
+            metadata_text += f"<b>Lens:</b> {photo.lens_model}<br>"
+            metadata_text += f"<b>ISO:</b> {photo.iso}<br>"
+            metadata_text += f"<b>Aperture:</b> f/{photo.aperture}<br>"
+            metadata_text += f"<b>Shutter:</b> {photo.shutter_speed}<br>"
+            self.metadata_label.setText(metadata_text)
         else:
-            self.label.setText("Photo Preview Content")
+            self.image_label.clear()
+            self.metadata_label.setText("No photo selected.")
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if self.current_photo and self.image_label.pixmap():
+            self.image_label.setPixmap(self.image_label.pixmap().scaled(self.image_label.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
