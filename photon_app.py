@@ -47,8 +47,9 @@ class PhotonApp(QMainWindow):
         self.lightroom_catalog = catalog
         self.folder_tree_view.model._root_folders = self.lightroom_catalog.root_folders
         self.folder_tree_view.model.modelReset.emit()
+        self.thumbnail_grid_view.set_catalog(self.lightroom_catalog)
+        self.photo_preview_view.set_catalog(self.lightroom_catalog)
         print("Catalog loaded successfully into UI.")
-        # TODO: Pass catalog to ThumbnailGridView and PhotoPreviewView
 
     def _on_catalog_error(self, message: str):
         QMessageBox.critical(self, "Catalog Loading Error", message)
@@ -64,17 +65,17 @@ class PhotonApp(QMainWindow):
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, folder_dock)
 
         # Thumbnail Grid Panel
+        self.thumbnail_grid_view = ThumbnailGridView() # Store as instance variable
         thumbnail_dock = QDockWidget("Thumbnails", self)
         thumbnail_dock.setAllowedAreas(Qt.DockWidgetArea.AllDockWidgetAreas)
-        thumbnail_grid_view = ThumbnailGridView()
-        thumbnail_dock.setWidget(thumbnail_grid_view)
+        thumbnail_dock.setWidget(self.thumbnail_grid_view)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, thumbnail_dock)
 
         # Photo Preview Panel
+        self.photo_preview_view = PhotoPreviewView() # Store as instance variable
         preview_dock = QDockWidget("Preview", self)
         preview_dock.setAllowedAreas(Qt.DockWidgetArea.AllDockWidgetAreas)
-        photo_preview_view = PhotoPreviewView()
-        preview_dock.setWidget(photo_preview_view)
+        preview_dock.setWidget(self.photo_preview_view)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, preview_dock)
 
     def apply_dark_theme(self):
