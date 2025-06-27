@@ -36,13 +36,11 @@ class FolderTreeModel(QAbstractItemModel):
         if parent_node is None:
             return QModelIndex() # Top-level item has no parent in the model
 
-        # Find the row of the parent_node within its parent's children
-        grandparent_node = parent_node.parent
-        if grandparent_node is None:
-            # Parent is a root folder
+        # Determine the row of the parent within its own parent's children or root folders
+        if parent_node.parent is None: # If the parent is a root folder
             row = self._root_folders.index(parent_node)
         else:
-            row = grandparent_node.children.index(parent_node)
+            row = parent_node.parent.children.index(parent_node)
 
         return self.createIndex(row, 0, parent_node)
 
