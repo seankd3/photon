@@ -33,10 +33,11 @@ This file tracks the development progress of the Photon application.
 *   **Data Persistence:**
     *   Implemented `CullingDatabase` to store culling actions (ratings, pick/reject) in a separate SQLite database.
     *   Integrated `CullingDatabase` into `photon_app.py` to save and load culling data, ensuring non-destructive editing.
+*   **Image Processing Optimization:**
+    *   Implemented asynchronous thumbnail generation using `ThreadPoolExecutor` to prevent UI blocking during thumbnail creation.
 
 ## Next Steps:
 
-*   **Image Caching Optimization:** Further optimize image caching and loading for very large catalogs.
 *   **Error Handling and User Feedback:** Enhance error handling and provide more detailed user feedback for various operations.
 *   **UI Polish and Responsiveness:** Continue refining the UI, ensuring responsiveness across different window sizes.
 *   **Advanced Culling Features:** Implement more advanced culling features (e.g., color labels, flags, custom sorting).
