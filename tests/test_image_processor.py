@@ -1,9 +1,9 @@
 import unittest
 import os
 from PIL import Image
-import hashlib
 
 from photon.image_processor import ImageProcessor
+
 
 class TestImageProcessor(unittest.TestCase):
     @classmethod
@@ -26,29 +26,39 @@ class TestImageProcessor(unittest.TestCase):
         # Clean up dummy files and cache directory
         if os.path.exists(cls.test_dir):
             import shutil
+
             shutil.rmtree(cls.test_dir)
 
     @classmethod
     def _create_dummy_image(cls, path, format):
-        img = Image.new('RGB', (100, 100), color = 'red')
+        img = Image.new("RGB", (100, 100), color="red")
         img.save(path, format)
 
     def test_generate_thumbnail(self):
-        thumbnail_path = self.image_processor.generate_thumbnail(self.dummy_image_path_jpg, size=(50, 50))
+        future = self.image_processor.generate_thumbnail_async(
+            self.dummy_image_path_jpg, size=(50, 50)
+        )
+        thumbnail_path = future.result()
         self.assertIsNotNone(thumbnail_path)
         self.assertTrue(os.path.exists(thumbnail_path))
-        
+
         # Verify thumbnail size
         with Image.open(thumbnail_path) as thumb_img:
             self.assertEqual(thumb_img.size, (50, 50))
 
         # Test caching: generating again should return the same path and not re-create
-        thumbnail_path_cached = self.image_processor.generate_thumbnail(self.dummy_image_path_jpg, size=(50, 50))
+        future_cached = self.image_processor.generate_thumbnail_async(
+            self.dummy_image_path_jpg, size=(50, 50)
+        )
+        thumbnail_path_cached = future_cached.result()
         self.assertEqual(thumbnail_path, thumbnail_path_cached)
 
         # Test with non-existent image
         non_existent_path = os.path.join(self.test_dir, "non_existent.jpg")
-        self.assertIsNone(self.image_processor.generate_thumbnail(non_existent_path))
+        future_non_existent = self.image_processor.generate_thumbnail_async(
+            non_existent_path
+        )
+        self.assertIsNone(future_non_existent.result())
 
     def test_load_image(self):
         loaded_image = self.image_processor.load_image(self.dummy_image_path_png)
@@ -60,5 +70,6 @@ class TestImageProcessor(unittest.TestCase):
         non_existent_path = os.path.join(self.test_dir, "non_existent.png")
         self.assertIsNone(self.image_processor.load_image(non_existent_path))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

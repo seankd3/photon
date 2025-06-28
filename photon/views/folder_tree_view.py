@@ -1,35 +1,27 @@
-from PyQt6.QtWidgets import QTreeView
-from PyQt6.QtCore import Qt, pyqtSignal
-from photon.views.folder_tree_model import FolderTreeModel
-from photon.models import FolderNode
+from PyQt5.QtWidgets import QTreeView
+from PyQt5.QtCore import pyqtSignal, QModelIndex
+from .folder_tree_model import FolderTreeModel
 
 class FolderTreeView(QTreeView):
-    folder_selected = pyqtSignal(FolderNode)
+    folder_selected = pyqtSignal(str)
 
-    def __init__(self, root_folders, parent=None):
+    def __init__(self, catalog, parent=None):
         super().__init__(parent)
-        self.model = FolderTreeModel(root_folders)
-        self.setModel(self.model)
+        self._catalog = catalog
+        self._model = FolderTreeModel(self._catalog)
+        self.setModel(self._model)
         self.setHeaderHidden(True)
+        self.clicked.connect(self._on_clicked)
 
-        self.clicked.connect(self._on_folder_clicked)
-
-        self.setStyleSheet("""
-            QTreeView {
-                background-color: #1E1E1E;
-                color: #CCCCCC;
-                border: none;
-            }
-            QTreeView::item {
-                padding: 3px;
-            }
-            QTreeView::item:selected {
-                background-color: #3E3E40;
-            }
-        """)
-
-    def _on_folder_clicked(self, index):
+    def _on_clicked(self, index: QModelIndex):
         if index.isValid():
-            folder_node = self.model.data(index, Qt.ItemDataRole.UserRole)
-            if isinstance(folder_node, FolderNode):
-                self.folder_selected.emit(folder_node)
+            node = index.internalPointer()
+            if node and not node.is_root:
+                self.folder_selected.emit(node.path)
+
+    def set_catalog(self, catalog):
+        self._catalog = catalog
+        self._model = FolderTreeModel(self._catalog)
+        self.setModel(self._model)
+        # Expand the root node to show initial folders
+        self.expandToDepth(0)

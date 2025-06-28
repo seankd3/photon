@@ -3,3 +3,4 @@ Pillow
 pytest
 ruff
 black
+rawpy

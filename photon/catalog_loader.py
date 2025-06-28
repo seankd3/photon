@@ -1,12 +1,15 @@
-from PyQt6.QtCore import QThread, pyqtSignal
+from PyQt6.QtCore import QObject, pyqtSignal, QThread
 from photon.catalog_reader import LightroomCatalogReader
 from photon.models import LightroomCatalog
+import asyncio
+from typing import Optional
+
 
 class CatalogLoader(QThread):
     catalog_loaded = pyqtSignal(LightroomCatalog)
     error_occurred = pyqtSignal(str)
 
-    def __init__(self, catalog_path: str):
+    def __init__(self, catalog_path: str, parent: Optional[QObject] = None) -> None:
         super().__init__()
         self.catalog_path = catalog_path
         self.catalog_reader = LightroomCatalogReader()
@@ -14,7 +17,10 @@ class CatalogLoader(QThread):
     def run(self):
         try:
             import asyncio
-            catalog = asyncio.run(self.catalog_reader.load_catalog_async(self.catalog_path))
+
+            catalog = asyncio.run(
+                self.catalog_reader.load_catalog_async(self.catalog_path)
+            )
             self.catalog_loaded.emit(catalog)
         except Exception as e:
             self.error_occurred.emit(f"Error loading catalog: {e}")

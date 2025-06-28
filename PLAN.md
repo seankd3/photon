@@ -56,11 +56,11 @@
     *   Integrate `QDockWidget`s for flexible, rearrangeable panels.
     *   Implement initial dark theme using QSS (Qt Style Sheets).
 2.  **Panel Views (`photon/views/`):
-    *   **Folder Tree View (`folder_tree_view.py`):** Display the `FolderNode` hierarchy.
+    *   **Folder Tree View (`folder_tree_view.py`):** Display the `FolderNode` hierarchy. **(DONE)**
     *   **Thumbnail Grid View (`thumbnail_grid_view.py`):** Efficiently display `PhotoMetadata` thumbnails. Implement virtual scrolling for large datasets.
     *   **Photo Preview View (`photo_preview_view.py`):** Display the selected photo at a larger size with metadata overlay.
-3.  **Data Binding/Communication:** Establish communication between the `catalog_reader`, `image_processor`, and UI views using PyQt's signal/slot mechanism.
-4.  **Interaction:** Implement basic keyboard navigation and culling actions (e.g., rating, pick/reject).
+3.  **Data Binding/Communication:** Establish communication between the `catalog_reader`, `image_processor`, and UI views using PyQt's signal/slot mechanism. **(DONE)**
+4.  **Interaction:** Implement basic keyboard navigation and culling actions (e.g., rating, pick/reject). **(DONE)**
 
 ---
 

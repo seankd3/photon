@@ -1,11 +1,13 @@
 import sqlite3
 import os
 
-def extract_lrcat_data(lrcat_path: str, output_db_path: str):
+
+def extract_lrcat_data(lrcat_path: str, output_db_path: str) -> None:
     """
     Extracts relevant data from a Lightroom catalog (.lrcat) into a new SQLite database.
     This is a workaround for cases where the .lrcat file is locked or inaccessible.
     """
+    print(f"Attempting to extract data from {lrcat_path} to {output_db_path}")
     if not os.path.exists(lrcat_path):
         raise FileNotFoundError(f"Lightroom catalog not found at: {lrcat_path}")
 
@@ -26,7 +28,7 @@ def extract_lrcat_data(lrcat_path: str, output_db_path: str):
             "AgLibraryFolder",
             "Adobe_images",
             "AgLibraryRootFolder",
-            "AgLibraryPreference"
+            "AgLibraryPreference",
         ]
 
         for table_name in tables_to_copy:
@@ -47,7 +49,9 @@ def extract_lrcat_data(lrcat_path: str, output_db_path: str):
                 rows = source_cursor.fetchall()
                 if rows:
                     placeholders = ", ".join(["?" for _ in schema])
-                    dest_cursor.executemany(f"INSERT INTO {table_name} VALUES ({placeholders})", rows)
+                    dest_cursor.executemany(
+                        f"INSERT INTO {table_name} VALUES ({placeholders})", rows
+                    )
                 print(f"Copied {len(rows)} rows from {table_name}")
 
             except sqlite3.Error as e:
@@ -62,5 +66,5 @@ def extract_lrcat_data(lrcat_path: str, output_db_path: str):
     except sqlite3.Error as e:
         print(f"Error accessing Lightroom catalog: {e}")
         if os.path.exists(output_db_path):
-            os.remove(output_db_path) # Clean up incomplete file
+            os.remove(output_db_path)  # Clean up incomplete file
         raise

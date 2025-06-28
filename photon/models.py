@@ -1,36 +1,38 @@
 from datetime import datetime
 from typing import List, Optional, Dict, Set
 
-class PhotoMetadata:
-    def __init__(self,
-                 id: str,
-                 file_path: str,
-                 file_name: str,
-                 folder_id: str,
-                 file_format: str,
-                 file_size: int,
-                 date_created: datetime,
-                 date_modified: datetime,
-                 date_captured: Optional[datetime] = None,
-                 width: int = 0,
-                 height: int = 0,
-                 orientation: str = "",
-                 camera_make: str = "",
-                 camera_model: str = "",
-                 lens_model: str = "",
-                 focal_length: Optional[float] = None,
-                 aperture: Optional[float] = None,
-                 shutter_speed: Optional[float] = None,
-                 iso: Optional[int] = None,
-                 rating: int = 0,
-                 color_label: str = "",
-                 is_picked: bool = False,
-                 is_rejected: bool = False,
-                 keywords: Optional[List[str]] = None,
-                 collections: Optional[List[str]] = None,
-                 thumbnail_path: Optional[str] = None,
-                 thumbnail_generated_at: Optional[datetime] = None):
 
+class PhotoMetadata:
+    def __init__(
+        self,
+        id: str,
+        file_path: str,
+        file_name: str,
+        folder_id: str,
+        file_format: str,
+        file_size: int,
+        date_created: datetime,
+        date_modified: datetime,
+        date_captured: Optional[datetime] = None,
+        width: int = 0,
+        height: int = 0,
+        orientation: str = "",
+        camera_make: str = "",
+        camera_model: str = "",
+        lens_model: str = "",
+        focal_length: Optional[float] = None,
+        aperture: Optional[float] = None,
+        shutter_speed: Optional[float] = None,
+        iso: Optional[int] = None,
+        rating: int = 0,
+        color_label: str = "",
+        is_picked: bool = False,
+        is_rejected: bool = False,
+        keywords: Optional[List[str]] = None,
+        collections: Optional[List[str]] = None,
+        thumbnail_path: Optional[str] = None,
+        thumbnail_generated_at: Optional[datetime] = None,
+    ):
         self.id = id
         self.file_path = file_path
         self.file_name = file_name
@@ -65,27 +67,35 @@ class PhotoMetadata:
 
     @property
     def has_thumbnail(self) -> bool:
-        return self.thumbnail_path is not None and self.thumbnail_generated_at is not None
+        return (
+            self.thumbnail_path is not None and self.thumbnail_generated_at is not None
+        )
 
 
 class FolderNode:
-    def __init__(self,
-                 id: str,
-                 name: str,
-                 full_path: str,
-                 parent_id: Optional[str] = None,
-                 parent: Optional['FolderNode'] = None):
+    def __init__(
+        self,
+        id: str,
+        name: str,
+        full_path: str,
+        parent_id: Optional[str] = None,
+        parent: Optional["FolderNode"] = None,
+        root_folder_id: Optional[str] = None,
+    ):
         self.id = id
         self.name = name
         self.full_path = full_path
         self.parent_id = parent_id
         self.parent = parent
-        self.children: List['FolderNode'] = []
+        self.root_folder_id = root_folder_id
+        self.children: List["FolderNode"] = []
         self.photos: List[PhotoMetadata] = []
 
         self.is_expanded: bool = False
         self.is_selected: bool = False
         self.is_loading: bool = False
+        self._children_loaded: bool = False  # New: True if children have been loaded
+        self._has_unloaded_children: bool = False  # New: True if there might be children not yet loaded
 
     @property
     def photo_count(self) -> int:
@@ -111,7 +121,7 @@ class FolderNode:
     def level(self) -> int:
         return (self.parent.level + 1) if self.parent else 0
 
-    def get_all_descendants(self) -> List['FolderNode']:
+    def get_all_descendants(self) -> List["FolderNode"]:
         descendants = []
         for child in self.children:
             descendants.append(child)
@@ -124,13 +134,13 @@ class FolderNode:
             all_photos.extend(child.get_all_photos())
         return all_photos
 
-    def find_child(self, name: str) -> Optional['FolderNode']:
+    def find_child(self, name: str) -> Optional["FolderNode"]:
         for child in self.children:
             if child.name.lower() == name.lower():
                 return child
         return None
 
-    def add_child(self, child: 'FolderNode'):
+    def add_child(self, child: "FolderNode") -> None:
         child.parent = self
         child.parent_id = self.id
         self.children.append(child)
@@ -140,12 +150,14 @@ class FolderNode:
 
 
 class LightroomCatalog:
-    def __init__(self,
-                 file_path: str,
-                 name: str,
-                 last_modified: datetime,
-                 loaded_at: datetime,
-                 version: str = ""):
+    def __init__(
+        self,
+        file_path: str,
+        name: str,
+        last_modified: datetime,
+        loaded_at: datetime,
+        version: str = "",
+    ):
         self.file_path = file_path
         self.name = name
         self.last_modified = last_modified
@@ -157,7 +169,16 @@ class LightroomCatalog:
         self.folders_by_id: Dict[str, FolderNode] = {}
 
         self.supported_formats: Set[str] = {
-            ".jpg", ".jpeg", ".png", ".dng", ".cr2", ".cr3", ".nef", ".arw", ".orf", ".rw2"
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".dng",
+            ".cr2",
+            ".cr3",
+            ".nef",
+            ".arw",
+            ".orf",
+            ".rw2",
         }
 
     @property
@@ -189,10 +210,13 @@ class LightroomCatalog:
             return []
 
         term = search_term.lower()
-        return [p for p in self.photos_by_id.values() if
-                term in p.file_name.lower() or
-                term in p.file_path.lower() or
-                any(term in k.lower() for k in p.keywords)]
+        return [
+            p
+            for p in self.photos_by_id.values()
+            if term in p.file_name.lower()
+            or term in p.file_path.lower()
+            or any(term in k.lower() for k in p.keywords)
+        ]
 
     def get_filtered_photos(
         self,
@@ -200,7 +224,7 @@ class LightroomCatalog:
         min_rating: Optional[int] = None,
         is_picked: Optional[bool] = None,
         from_date: Optional[datetime] = None,
-        to_date: Optional[datetime] = None
+        to_date: Optional[datetime] = None,
     ) -> List[PhotoMetadata]:
         query = list(self.photos_by_id.values())
 
@@ -214,7 +238,9 @@ class LightroomCatalog:
             query = [p for p in query if p.is_picked == is_picked]
 
         if from_date:
-            query = [p for p in query if p.date_captured and p.date_captured >= from_date]
+            query = [
+                p for p in query if p.date_captured and p.date_captured >= from_date
+            ]
 
         if to_date:
             query = [p for p in query if p.date_captured and p.date_captured <= to_date]

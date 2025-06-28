@@ -1,5 +1,5 @@
 import sys
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication, QFileDialog
 from photon_app import PhotonApp
 
 if __name__ == "__main__":
@@ -7,8 +7,11 @@ if __name__ == "__main__":
     window = PhotonApp()
     window.showMaximized()
 
-    # Example: Load a catalog. Replace with a real path or user selection.
-    # For testing, you can uncomment and provide a valid .lrcat path.
-    # window.load_catalog(r"C:\Path\To\Your\Catalog.lrcat")
+    # Allow user to select a catalog
+    catalog_path, _ = QFileDialog.getOpenFileName(
+        window, "Open Lightroom Catalog", "", "Lightroom Catalog Files (*.lrcat)"
+    )
+    if catalog_path:
+        window.load_catalog(catalog_path)
 
     sys.exit(app.exec())

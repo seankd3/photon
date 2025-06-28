@@ -1,17 +1,16 @@
 import unittest
-import os
 import sqlite3
-from datetime import datetime, timedelta
-import asyncio
+from datetime import datetime
 
 from photon.catalog_reader import LightroomCatalogReader
-from photon.models import LightroomCatalog, FolderNode, PhotoMetadata
+from photon.models import LightroomCatalog
+
 
 class TestLightroomCatalogReader(unittest.IsolatedAsyncioTestCase):
     @classmethod
     def setUpClass(cls):
         # Create an in-memory SQLite database for testing
-        cls.conn = sqlite3.connect(':memory:')
+        cls.conn = sqlite3.connect(":memory:")
         cls.cursor = cls.conn.cursor()
         cls._create_dummy_lrcat_in_memory(cls.cursor)
 
@@ -22,7 +21,8 @@ class TestLightroomCatalogReader(unittest.IsolatedAsyncioTestCase):
     @classmethod
     def _create_dummy_lrcat_in_memory(cls, cursor):
         # Create necessary tables
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE AgLibraryFile (
                 id_local INTEGER PRIMARY KEY,
                 baseName TEXT,
@@ -33,22 +33,28 @@ class TestLightroomCatalogReader(unittest.IsolatedAsyncioTestCase):
                 fileCreateDate REAL,
                 fileModDate REAL
             );
-        """)
-        cursor.execute("""
+        """
+        )
+        cursor.execute(
+            """
             CREATE TABLE AgLibraryFolder (
                 id_local INTEGER PRIMARY KEY,
                 pathFromRoot TEXT,
                 rootFolder INTEGER,
-                parent INTEGER
+                parentId INTEGER
             );
-        """)
-        cursor.execute("""
+        """
+        )
+        cursor.execute(
+            """
             CREATE TABLE AgLibraryRootFolder (
                 id_local INTEGER PRIMARY KEY,
                 absolutePath TEXT
             );
-        """)
-        cursor.execute("""
+        """
+        )
+        cursor.execute(
+            """
             CREATE TABLE Adobe_images (
                 id_local INTEGER PRIMARY KEY,
                 rootFile INTEGER,
@@ -67,54 +73,144 @@ class TestLightroomCatalogReader(unittest.IsolatedAsyncioTestCase):
                 colorLabels TEXT,
                 pick INTEGER
             );
-        """)
-        cursor.execute("""
+        """
+        )
+        cursor.execute(
+            """
             CREATE TABLE AgLibraryPreference (
                 id_local INTEGER PRIMARY KEY,
                 name TEXT,
                 value TEXT
             );
-        """)
+        """
+        )
 
         # Insert dummy data
         # Root Folder
-        cursor.execute("INSERT INTO AgLibraryRootFolder (id_local, absolutePath) VALUES (?, ?)", (1, 'C:/Users/TestUser/Pictures/'))
+        cursor.execute(
+            "INSERT INTO AgLibraryRootFolder (id_local, absolutePath) VALUES (?, ?)",
+            (1, "C:/Users/TestUser/Pictures/"),
+        )
 
         # Folders
-        cursor.execute("INSERT INTO AgLibraryFolder (id_local, pathFromRoot, rootFolder, parent) VALUES (?, ?, ?, ?)", (1, 'Photos/', 1, None))
-        cursor.execute("INSERT INTO AgLibraryFolder (id_local, pathFromRoot, rootFolder, parent) VALUES (?, ?, ?, ?)", (2, 'Photos/2023/', 1, 1))
-        cursor.execute("INSERT INTO AgLibraryFolder (id_local, pathFromRoot, rootFolder, parent) VALUES (?, ?, ?, ?)", (3, 'Photos/2024/', 1, 1))
+        cursor.execute(
+            "INSERT INTO AgLibraryFolder (id_local, pathFromRoot, rootFolder, parentId) VALUES (?, ?, ?, ?)",
+            (1, "Photos/", 1, None),
+        )
+        cursor.execute(
+            "INSERT INTO AgLibraryFolder (id_local, pathFromRoot, rootFolder, parentId) VALUES (?, ?, ?, ?)",
+            (2, "Photos/2023/", 1, 1),
+        )
+        cursor.execute(
+            "INSERT INTO AgLibraryFolder (id_local, pathFromRoot, rootFolder, parentId) VALUES (?, ?, ?, ?)",
+            (3, "Photos/2024/", 1, 1),
+        )
 
         # Preferences
-        cursor.execute("INSERT INTO AgLibraryPreference (name, value) VALUES (?, ?)", ('libraryVersion', '12.0'))
+        cursor.execute(
+            "INSERT INTO AgLibraryPreference (name, value) VALUES (?, ?)",
+            ("libraryVersion", "12.0"),
+        )
 
         # Photos
         base_date_2001 = datetime(2001, 1, 1, 0, 0, 0)
-        file_create_date_1 = (datetime(2023, 1, 10, 10, 0, 0) - base_date_2001).total_seconds()
-        file_mod_date_1 = (datetime(2023, 1, 10, 10, 5, 0) - base_date_2001).total_seconds()
+        file_create_date_1 = (
+            datetime(2023, 1, 10, 10, 0, 0) - base_date_2001
+        ).total_seconds()
+        file_mod_date_1 = (
+            datetime(2023, 1, 10, 10, 5, 0) - base_date_2001
+        ).total_seconds()
         capture_time_1 = datetime(2023, 1, 10, 10, 1, 0).isoformat()
 
-        file_create_date_2 = (datetime(2024, 2, 15, 14, 0, 0) - base_date_2001).total_seconds()
-        file_mod_date_2 = (datetime(2024, 2, 15, 14, 10, 0) - base_date_2001).total_seconds()
+        file_create_date_2 = (
+            datetime(2024, 2, 15, 14, 0, 0) - base_date_2001
+        ).total_seconds()
+        file_mod_date_2 = (
+            datetime(2024, 2, 15, 14, 10, 0) - base_date_2001
+        ).total_seconds()
         capture_time_2 = datetime(2024, 2, 15, 14, 1, 0).isoformat()
 
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO AgLibraryFile (id_local, baseName, extension, folder, fileFormat, fileSize, fileCreateDate, fileModDate) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (101, 'image1', 'jpg', 2, 'JPEG', 1024000, file_create_date_1, file_mod_date_1))
-        cursor.execute("""
+        """,
+            (
+                101,
+                "image1",
+                "jpg",
+                2,
+                "JPEG",
+                1024000,
+                file_create_date_1,
+                file_mod_date_1,
+            ),
+        )
+        cursor.execute(
+            """
             INSERT INTO Adobe_images (id_local, rootFile, captureTime, fileWidth, fileHeight, orientation, cameraMake, cameraModel, lens, focalLength, aperture, shutterSpeed, isoSpeedRating, rating, colorLabels, pick) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (201, 101, capture_time_1, 1920, 1080, 'Landscape', 'Canon', 'EOS R', 'RF24-105mm', 50.0, 4.0, 0.001, 400, 3, 'Red', 1))
+        """,
+            (
+                201,
+                101,
+                capture_time_1,
+                1920,
+                1080,
+                "Landscape",
+                "Canon",
+                "EOS R",
+                "RF24-105mm",
+                50.0,
+                4.0,
+                0.001,
+                400,
+                3,
+                "Red",
+                1,
+            ),
+        )
 
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO AgLibraryFile (id_local, baseName, extension, folder, fileFormat, fileSize, fileCreateDate, fileModDate) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (102, 'image2', 'dng', 3, 'DNG', 2048000, file_create_date_2, file_mod_date_2))
-        cursor.execute("""
+        """,
+            (
+                102,
+                "image2",
+                "dng",
+                3,
+                "DNG",
+                2048000,
+                file_create_date_2,
+                file_mod_date_2,
+            ),
+        )
+        cursor.execute(
+            """
             INSERT INTO Adobe_images (id_local, rootFile, captureTime, fileWidth, fileHeight, orientation, cameraMake, cameraModel, lens, focalLength, aperture, shutterSpeed, isoSpeedRating, rating, colorLabels, pick) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (202, 102, capture_time_2, 3000, 2000, 'Landscape', 'Sony', 'a7 III', 'FE 24-70mm', 35.0, 2.8, 0.002, 800, 0, '', 0))
+        """,
+            (
+                202,
+                102,
+                capture_time_2,
+                3000,
+                2000,
+                "Landscape",
+                "Sony",
+                "a7 III",
+                "FE 24-70mm",
+                35.0,
+                2.8,
+                0.002,
+                800,
+                0,
+                "",
+                0,
+            ),
+        )
 
         cls.conn.commit()
 
@@ -138,11 +234,11 @@ class TestLightroomCatalogReader(unittest.IsolatedAsyncioTestCase):
         # Verify folder hierarchy
         self.assertEqual(len(catalog.root_folders), 1)
         root_folder = catalog.root_folders[0]
-        self.assertEqual(root_folder.name, "Photos/")
+        self.assertEqual(root_folder.name, "Photos")
         self.assertEqual(len(root_folder.children), 2)
 
         folder_2023 = catalog.folders_by_id["2"]
-        self.assertEqual(folder_2023.name, "2023/")
+        self.assertEqual(folder_2023.name, "2023")
         self.assertEqual(folder_2023.parent.id, "1")
 
         # Verify photos
@@ -152,7 +248,11 @@ class TestLightroomCatalogReader(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(photo1.rating, 3)
         self.assertEqual(photo1.color_label, "Red")
         self.assertTrue(photo1.is_picked)
-        self.assertAlmostEqual(photo1.date_captured.timestamp(), datetime(2023, 1, 10, 10, 1, 0).timestamp(), delta=1)
+        self.assertAlmostEqual(
+            photo1.date_captured.timestamp(),
+            datetime(2023, 1, 10, 10, 1, 0).timestamp(),
+            delta=1,
+        )
 
         photo2 = catalog.photos_by_id["102"]
         self.assertEqual(photo2.file_name, "image2")
@@ -160,7 +260,11 @@ class TestLightroomCatalogReader(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(photo2.rating, 0)
         self.assertEqual(photo2.color_label, "")
         self.assertFalse(photo2.is_picked)
-        self.assertAlmostEqual(photo2.date_captured.timestamp(), datetime(2024, 2, 15, 14, 1, 0).timestamp(), delta=1)
+        self.assertAlmostEqual(
+            photo2.date_captured.timestamp(),
+            datetime(2024, 2, 15, 14, 1, 0).timestamp(),
+            delta=1,
+        )
 
         # Verify photos are linked to folders
         self.assertEqual(len(folder_2023.photos), 1)
@@ -169,7 +273,9 @@ class TestLightroomCatalogReader(unittest.IsolatedAsyncioTestCase):
     def test_parse_lightroom_date(self):
         reader = LightroomCatalogReader()
         # Test with a known date (seconds since 2001-01-01 UTC)
-        test_seconds = (datetime(2020, 5, 15, 12, 30, 0) - datetime(2001, 1, 1, 0, 0, 0)).total_seconds()
+        test_seconds = (
+            datetime(2020, 5, 15, 12, 30, 0) - datetime(2001, 1, 1, 0, 0, 0)
+        ).total_seconds()
         parsed_date = reader._parse_lightroom_date(test_seconds)
         self.assertEqual(parsed_date, datetime(2020, 5, 15, 12, 30, 0))
         self.assertEqual(reader._parse_lightroom_date(None), datetime.min)
@@ -183,5 +289,6 @@ class TestLightroomCatalogReader(unittest.IsolatedAsyncioTestCase):
         self.assertIsNone(reader._parse_lightroom_capture_time(None))
         self.assertIsNone(reader._parse_lightroom_capture_time("invalid-date"))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
