@@ -1,6 +1,0 @@
-PyQt6
-Pillow
-pytest
-ruff
-black
-rawpy
