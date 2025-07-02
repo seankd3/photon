@@ -2,15 +2,16 @@ import sys
 import json
 import os
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, Qt, QTimer
-from PyQt5.QtGui import QKeySequence
+from PyQt5.QtGui import QKeySequence, QPixmap
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QGridLayout, QLabel, QDockWidget, QShortcut
 )
 from src.catalog import get_images
+from src.thumbnail_loader import generate_thumbnail
 
 
 class Worker(QObject):
-    image_found = pyqtSignal(object)
+    thumbnail_ready = pyqtSignal(QPixmap, object)
     finished = pyqtSignal()
 
     def __init__(self, catalog_path):
@@ -19,11 +20,14 @@ class Worker(QObject):
 
     def run(self):
         images = get_images(self.catalog_path)
-        # Only load a small number of images for demonstration purposes
-        for i, image in enumerate(images):
+        for i, image_data in enumerate(images):
             if i >= 20:  # Limit to 20 images for responsiveness
                 break
-            self.image_found.emit(image)
+            # image_data is (id_local, fileName, relativePath, absolutePath)
+            absolute_path = image_data[3]
+            thumbnail = generate_thumbnail(absolute_path)
+            if thumbnail:
+                self.thumbnail_ready.emit(thumbnail, image_data)
         self.finished.emit()
 
 
@@ -34,10 +38,13 @@ class GridView(QWidget):
         self.setLayout(self.layout)
         self.image_widgets = []
 
-    def add_image(self, image):
-        i = len(self.image_widgets)
-        label = QLabel(image[1])  # image[1] is the fileName
-        self.layout.addWidget(label, i // 4, i % 4)
+    def add_thumbnail(self, thumbnail: QPixmap, image_data: object):
+        if thumbnail.isNull():
+            return
+        label = QLabel(self)  # Set self as parent
+        label.setFixedSize(128, 128) # Set a fixed size for the label
+        label.setPixmap(thumbnail.scaled(label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        self.layout.addWidget(label, len(self.image_widgets) // 4, len(self.image_widgets) % 4)
         self.image_widgets.append(label)
 
 
@@ -78,7 +85,7 @@ class MainWindow(QMainWindow):
         self.worker.moveToThread(self.thread)
 
         self.thread.started.connect(self.worker.run)
-        self.worker.image_found.connect(self.grid_view.add_image)
+        self.worker.thumbnail_ready.connect(self.grid_view.add_thumbnail)
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
@@ -88,6 +95,8 @@ class MainWindow(QMainWindow):
 
     def close_application_timer(self):
         QTimer.singleShot(5000, QApplication.instance().quit)  # Close after 5 seconds
+
+    
 
     def setup_shortcuts(self):
         # Tab to toggle side panels
