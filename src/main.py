@@ -1,7 +1,10 @@
 import sys
-from PyQt5.QtCore import QObject, QThread, pyqtSignal, QTimer
+import json
+import os
+from PyQt5.QtCore import QObject, QThread, pyqtSignal, Qt, QTimer
+from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QGridLayout, QLabel
+    QApplication, QMainWindow, QWidget, QGridLayout, QLabel, QDockWidget, QShortcut
 )
 from src.catalog import get_images
 
@@ -47,7 +50,25 @@ class MainWindow(QMainWindow):
         self.grid_view = GridView(self)
         self.setCentralWidget(self.grid_view)
 
+        # Create dockable panels
+        self.left_panel = QDockWidget("Left Panel", self)
+        self.left_panel.setObjectName("LeftPanel")
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.left_panel)
+        self.left_panel.setWidget(QLabel("Navigator, Folder Tree, Collections"))
+
+        self.right_panel = QDockWidget("Right Panel", self)
+        self.right_panel.setObjectName("RightPanel")
+        self.addDockWidget(Qt.RightDockWidgetArea, self.right_panel)
+        self.right_panel.setWidget(QLabel("Histogram, Quick Info, EXIF"))
+
+        self.filmstrip_panel = QDockWidget("Filmstrip", self)
+        self.filmstrip_panel.setObjectName("FilmstripPanel")
+        self.addDockWidget(Qt.BottomDockWidgetArea, self.filmstrip_panel)
+        self.filmstrip_panel.setWidget(QLabel("Filmstrip Thumbnails"))
+
         self.load_catalog()
+        self.setup_shortcuts()
+        self.load_layout()
 
     def load_catalog(self):
         catalog_path = "C:/Users/smast/OneDrive/Desktop/CodeProjects/Photon/TestCatolog/2025.lrcat"
@@ -67,6 +88,47 @@ class MainWindow(QMainWindow):
 
     def close_application_timer(self):
         QTimer.singleShot(5000, QApplication.instance().quit)  # Close after 5 seconds
+
+    def setup_shortcuts(self):
+        # Tab to toggle side panels
+        self.tab_shortcut = QShortcut(Qt.Key_Tab, self)
+        self.tab_shortcut.activated.connect(self.toggle_side_panels)
+
+        # Shift+Tab to toggle all UI chrome
+        self.shift_tab_shortcut = QShortcut(Qt.ShiftModifier | Qt.Key_Tab, self)
+        self.shift_tab_shortcut.activated.connect(self.toggle_all_chrome)
+
+    def toggle_side_panels(self):
+        self.left_panel.setVisible(not self.left_panel.isVisible())
+        self.right_panel.setVisible(not self.right_panel.isVisible())
+
+    def toggle_all_chrome(self):
+        is_visible = self.menuBar().isVisible()
+        self.menuBar().setVisible(not is_visible)
+        self.left_panel.setVisible(not is_visible)
+        self.right_panel.setVisible(not is_visible)
+        self.filmstrip_panel.setVisible(not is_visible)
+
+    def load_layout(self):
+        layout_file = "layout.json"
+        if os.path.exists(layout_file):
+            with open(layout_file, "r") as f:
+                layout_data = json.load(f)
+                self.restoreGeometry(bytes.fromhex(layout_data["geometry"]))
+                self.restoreState(bytes.fromhex(layout_data["state"]))
+
+    def closeEvent(self, event):
+        self.save_layout()
+        super().closeEvent(event)
+
+    def save_layout(self):
+        layout_file = "layout.json"
+        layout_data = {
+            "geometry": self.saveGeometry().toHex().data().decode("utf-8"),
+            "state": self.saveState().toHex().data().decode("utf-8")
+        }
+        with open(layout_file, "w") as f:
+            json.dump(layout_data, f, indent=4)
 
 
 def main():

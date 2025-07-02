@@ -24,13 +24,13 @@
   {
     "id": "PHOTON-03",
     "title": "Dockable panel framework scaffold",
-    "status": "BLOCKED",
+    "status": "DONE",
     "parent": null,
     "blockedBy": ["PHOTON-01"],
     "attempts": 0,
-    "testsPassed": false,
-    "docsAdded": false,
-    "notes": "GUI development is paused."
+    "testsPassed": true,
+    "docsAdded": true,
+    "notes": "Implemented basic dockable panel layout and persistence."
   },
   {
     "id": "PHOTON-04",
