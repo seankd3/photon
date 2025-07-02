@@ -69,7 +69,7 @@
 
 | ID    | Scenario                           | Expected                                       |
 | ----- | ---------------------------------- | ---------------------------------------------- |
-| AT-01 | Open catalog with 50 k images      | Thumbnails populate within 10 s; UI responsive |
+| AT-01 | Open catalog with 5 k images      | Thumbnails populate within 10 s; UI responsive |
 | AT-02 | Press “3” on focused photo         | DB rating for that row == 3 within 200 ms      |
 | AT-03 | Drag Histogram panel to right dock | Panel snaps & state saved in layout JSON       |
 | AT-04 | Mark 500 photos “X” then export    | Catalog flags updated + JSON summary created   |

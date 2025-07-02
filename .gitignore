@@ -1,7 +1,37 @@
-
-/venv/
-/__pycache__/
+# Python
+__pycache__/
 *.pyc
-/TestCatolog/
-/TestData/
-/cache/
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+*.spec
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Test & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+*.lcov
+
+# IDE
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Lightroom Test Data
+TestCatolog/*.lrdata/

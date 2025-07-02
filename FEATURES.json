@@ -1,0 +1,79 @@
+[
+  {
+    "id": "PHOTON-01",
+    "title": "Catalog opening & simple read-only grid view",
+    "status": "BLOCKED",
+    "parent": null,
+    "blockedBy": [],
+    "attempts": 1,
+    "testsPassed": false,
+    "docsAdded": false,
+    "notes": "GUI is unresponsive due to high volume of images. Pivoting to headless automation."
+  },
+  {
+    "id": "PHOTON-02",
+    "title": "Hotkey rating / flagging → write-back",
+    "status": "DONE",
+    "parent": null,
+    "blockedBy": [],
+    "attempts": 0,
+    "testsPassed": false,
+    "docsAdded": false,
+    "notes": "Implementing as a CLI command."
+  },
+  {
+    "id": "PHOTON-03",
+    "title": "Dockable panel framework scaffold",
+    "status": "BLOCKED",
+    "parent": null,
+    "blockedBy": ["PHOTON-01"],
+    "attempts": 0,
+    "testsPassed": false,
+    "docsAdded": false,
+    "notes": "GUI development is paused."
+  },
+  {
+    "id": "PHOTON-04",
+    "title": "Histogram side panel (live RGB histogram)",
+    "status": "BLOCKED",
+    "parent": null,
+    "blockedBy": ["PHOTON-03"],
+    "attempts": 0,
+    "testsPassed": false,
+    "docsAdded": false,
+    "notes": "GUI development is paused."
+  },
+  {
+    "id": "PHOTON-05",
+    "title": "Cull stats panel",
+    "status": "BLOCKED",
+    "parent": null,
+    "blockedBy": ["PHOTON-03"],
+    "attempts": 0,
+    "testsPassed": false,
+    "docsAdded": false,
+    "notes": "GUI development is paused."
+  },
+  {
+    "id": "PHOTON-06",
+    "title": "Catalog change watcher (automatic refresh)",
+    "status": "DONE",
+    "parent": null,
+    "blockedBy": ["PHOTON-01"],
+    "attempts": 0,
+    "testsPassed": true,
+    "docsAdded": true,
+    "notes": "Implemented as a CLI command to check for changes and update a timestamp file."
+  },
+  {
+    "id": "PHOTON-07",
+    "title": "JSON export of rejected + kept lists",
+    "status": "DONE",
+    "parent": null,
+    "blockedBy": ["PHOTON-02"],
+    "attempts": 0,
+    "testsPassed": true,
+    "docsAdded": true,
+    "notes": "Implemented as a CLI command that exports to session-summary.json."
+  }
+]
