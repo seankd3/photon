@@ -8,7 +8,7 @@
     "attempts": 1,
     "testsPassed": true,
     "docsAdded": true,
-    "notes": "Implemented with limited image display and automatic closing for demonstration."
+    "notes": "Implemented with full image display, scrollable grid, dark theme, and .CR3 support."
   },
   {
     "id": "PHOTON-02",
@@ -17,9 +17,9 @@
     "parent": null,
     "blockedBy": [],
     "attempts": 0,
-    "testsPassed": false,
-    "docsAdded": false,
-    "notes": "Implementing as a CLI command."
+    "testsPassed": true,
+    "docsAdded": true,
+    "notes": "Implemented as a CLI command."
   },
   {
     "id": "PHOTON-03",

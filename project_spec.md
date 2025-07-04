@@ -78,8 +78,8 @@
 
 <!-- These become FEATURES.json entries -->
 
-* Catalog opening & simple read-only grid view   (priority P0)
-* Hotkey rating / flagging → write-back            (P0)
+* Catalog opening & simple read-only grid view   (priority P0) - Implemented with full image display, scrollable grid, dark theme, and .CR3 support.
+* Hotkey rating / flagging → write-back            (P0) - Implemented as a CLI command.
 * Dockable panel framework scaffold                (P0)
 * Histogram side panel (live RGB histogram)        (P1)
 * Cull stats panel                                 (P1)
