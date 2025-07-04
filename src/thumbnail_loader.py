@@ -1,22 +1,24 @@
 from PIL import Image
-from PyQt5.QtGui import QPixmap, QImage
+import rawpy
+import io
 
-def generate_thumbnail(image_path: str, size: tuple = (256, 256)) -> QPixmap | None:
-    """Generates a thumbnail from an image file and returns it as a QPixmap."""
+def generate_thumbnail_data(image_path: str, size: tuple = (256, 256)) -> bytes | None:
+    """Generates a thumbnail from an image file and returns it as bytes."""
     try:
-        img = Image.open(image_path)
+        if image_path.lower().endswith('.cr3'):
+            with rawpy.imread(image_path) as raw:
+                rgb = raw.postprocess()
+                img = Image.fromarray(rgb)
+        else:
+            img = Image.open(image_path)
+        
         img.thumbnail(size, Image.LANCZOS)
         
-        # Convert PIL Image to QImage
-        if img.mode == "RGB":
-            qimage = QImage(img.tobytes(), img.size[0], img.size[1], QImage.Format_RGB888)
-        elif img.mode == "RGBA":
-            qimage = QImage(img.tobytes(), img.size[0], img.size[1], QImage.Format_RGBA8888)
-        else:
-            qimage = QImage(img.tobytes(), img.size[0], img.size[1], QImage.Format_RGB888) # Default to RGB
+        # Convert PIL Image to bytes
+        byte_arr = io.BytesIO()
+        img.save(byte_arr, format='PNG')
+        return byte_arr.getvalue()
 
-        pixmap = QPixmap.fromImage(qimage)
-        return pixmap
     except Exception as e:
         print(f"Error generating thumbnail for {image_path}: {e}")
         return None

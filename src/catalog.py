@@ -16,7 +16,9 @@ def get_images(catalog_path: str) -> list:
                 img.id_local,
                 file.baseName || '.' || file.extension AS fileName,
                 folder.pathFromRoot || file.baseName || '.' || file.extension AS relativePath,
-                rootFolder.absolutePath || folder.pathFromRoot || file.baseName || '.' || file.extension AS absolutePath
+                rootFolder.absolutePath || folder.pathFromRoot || file.baseName || '.' || file.extension AS absolutePath,
+                img.rating,
+                img.pick
             FROM Adobe_images img
             JOIN AgLibraryFile file ON img.rootFile = file.id_local
             JOIN AgLibraryFolder folder ON file.folder = folder.id_local
