@@ -48,6 +48,7 @@ DATA_SOURCES = {
     },
 }
 
+
 # Get all enabled symbols across all data sources
 def get_all_symbols():
     """Return list of all symbols from enabled data sources."""
@@ -63,29 +64,29 @@ def get_all_symbols():
 def validate_config():
     """Validate configuration and check for required API keys."""
     errors = []
-    
+
     # Check if at least one data source is enabled
     enabled_sources = [name for name, cfg in DATA_SOURCES.items() if cfg.get("enabled")]
     if not enabled_sources:
         errors.append("At least one data source must be enabled")
-    
+
     # Check for required API keys
     if DATA_SOURCES["alpaca"]["enabled"]:
         if not DATA_SOURCES["alpaca"]["api_key"] or not DATA_SOURCES["alpaca"]["api_secret"]:
             errors.append("Alpaca is enabled but ALPACA_API_KEY or ALPACA_SECRET_KEY not set")
-    
+
     if DATA_SOURCES["stockdata"]["enabled"]:
         if not DATA_SOURCES["stockdata"]["api_key"]:
             errors.append("StockData is enabled but STOCKDATA_API_KEY not set")
-    
+
     # Check tick interval
     if TICK_INTERVAL_SECONDS <= 0:
         errors.append("TICK_INTERVAL_SECONDS must be positive")
-    
+
     # Check starting cash
     if STARTING_CASH <= 0:
         errors.append("STARTING_CASH must be positive")
-    
+
     return errors
 
 
@@ -98,5 +99,7 @@ if __name__ == "__main__":
             print(f"  - {error}")
     else:
         print("Configuration valid")
-        print(f"Enabled sources: {[name for name, cfg in DATA_SOURCES.items() if cfg.get('enabled')]}")
+        print(
+            f"Enabled sources: {[name for name, cfg in DATA_SOURCES.items() if cfg.get('enabled')]}"
+        )
         print(f"All symbols: {get_all_symbols()}")

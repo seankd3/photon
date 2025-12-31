@@ -11,6 +11,7 @@ class BotState:
     """
     Represents the current state of a trading bot.
     """
+
     cash: float
     positions: Dict[str, float] = field(default_factory=dict)  # symbol -> size
     avg_price: Dict[str, float] = field(default_factory=dict)  # symbol -> avg entry price
@@ -24,6 +25,7 @@ class Order:
     """
     Represents a market order submitted by a bot.
     """
+
     bot_name: str
     symbol: str
     side: Literal["BUY", "SELL"]
@@ -36,6 +38,7 @@ class Trade:
     """
     Represents an executed trade (filled order).
     """
+
     order: Order
     price: float  # Execution price
     cash_after: float
@@ -47,6 +50,7 @@ class EquitySnapshot:
     """
     Represents a point-in-time snapshot of bot equity.
     """
+
     time: float
     bot_name: str
     equity: float
