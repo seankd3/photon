@@ -132,28 +132,34 @@ class TradingLab:
 
     def get_all_prices(self) -> Dict[str, float]:
         """
-        Get latest prices from all data sources.
+        Get latest prices from all data sources (synchronous version).
+
+        This is a simplified synchronous wrapper that should only be used
+        when called from bot context where async/await is not available.
 
         Returns:
             Dictionary of symbol -> price
         """
-        all_prices = {}
-        for source in self.data_sources:
-            # Use asyncio.create_task to avoid blocking
-            # Note: get_snapshot is async, but we need sync here
-            # In production, this would be handled differently
-            try:
-                loop = asyncio.get_event_loop()
-                if loop.is_running():
-                    # If called from async context, we need to schedule it
-                    # For now, we'll store prices in a sync-accessible way
-                    pass
-            except RuntimeError:
-                pass
-
-        # For simplicity, gather prices synchronously
-        # This is a limitation that would be refined in production
-        return all_prices
+        # This will be populated by the main loop calling get_all_prices_async
+        # and storing the result. For now, we use the async method via run_until_complete
+        # if called from sync context.
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # Can't use run_until_complete when loop is already running
+                # In this case, return cached prices from data sources
+                all_prices = {}
+                for source in self.data_sources:
+                    # Access cached prices synchronously (thread-safe)
+                    # Note: This assumes data sources maintain a sync-accessible cache
+                    if hasattr(source, "_latest_prices"):
+                        all_prices.update(source._latest_prices)
+                return all_prices
+            else:
+                return loop.run_until_complete(self.get_all_prices_async())
+        except RuntimeError:
+            # No event loop in current thread
+            return {}
 
     async def get_all_prices_async(self) -> Dict[str, float]:
         """Get latest prices from all data sources (async version)."""

@@ -6,7 +6,7 @@ Manages bot portfolios, executes orders, and tracks PnL.
 
 import asyncio
 import logging
-from typing import Dict, List
+from typing import Dict, List, Optional
 from .models import BotState, Order, Trade
 
 logger = logging.getLogger(__name__)
@@ -81,7 +81,9 @@ class PaperBroker:
 
         return trades
 
-    async def _execute_order(self, order: Order, current_prices: Dict[str, float]) -> Trade | None:
+    async def _execute_order(
+        self, order: Order, current_prices: Dict[str, float]
+    ) -> Optional[Trade]:
         """
         Execute a single market order.
 
@@ -115,7 +117,7 @@ class PaperBroker:
                 logger.error(f"Unknown order side: {order.side}")
                 return None
 
-    async def _execute_buy(self, order: Order, price: float, state: BotState) -> Trade | None:
+    async def _execute_buy(self, order: Order, price: float, state: BotState) -> Optional[Trade]:
         """Execute a BUY order."""
         required_cash = price * order.size
 
@@ -150,7 +152,7 @@ class PaperBroker:
             position_after=new_position,
         )
 
-    async def _execute_sell(self, order: Order, price: float, state: BotState) -> Trade | None:
+    async def _execute_sell(self, order: Order, price: float, state: BotState) -> Optional[Trade]:
         """Execute a SELL order."""
         current_position = state.positions.get(order.symbol, 0.0)
 
