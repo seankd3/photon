@@ -35,3 +35,10 @@ htmlcov/
 
 # Lightroom Test Data
 TestCatolog/
+# Trading Lab
+lab.db
+lab.db-journal
+*.db
+*.db-journal
+bots/__pycache__/
+llm_trading_lab/__pycache__/

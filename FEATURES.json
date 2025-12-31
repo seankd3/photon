@@ -1,79 +1,101 @@
 [
   {
-    "id": "PHOTON-01",
-    "title": "Catalog opening & simple read-only grid view",
-    "status": "DONE",
-    "parent": null,
-    "blockedBy": [],
-    "attempts": 1,
-    "testsPassed": true,
-    "docsAdded": true,
-    "notes": "Implemented with full image display, scrollable grid, dark theme, and .CR3 support."
-  },
-  {
-    "id": "PHOTON-02",
-    "title": "Hotkey rating / flagging → write-back",
-    "status": "DONE",
+    "id": "TRADE-01",
+    "title": "Project structure and configuration",
+    "status": "TODO",
     "parent": null,
     "blockedBy": [],
     "attempts": 0,
-    "testsPassed": true,
-    "docsAdded": true,
-    "notes": "Implemented as a CLI command."
+    "testsPassed": false,
+    "docsAdded": false,
+    "notes": "Create llm_trading_lab/ structure, config.py, and update repo artifacts"
   },
   {
-    "id": "PHOTON-03",
-    "title": "Dockable panel framework scaffold",
-    "status": "DONE",
+    "id": "TRADE-02",
+    "title": "MarketDataSource base class and Binance connector",
+    "status": "TODO",
     "parent": null,
-    "blockedBy": ["PHOTON-01"],
-    "attempts": 0,
-    "testsPassed": true,
-    "docsAdded": true,
-    "notes": "Implemented basic dockable panel layout and persistence."
-  },
-  {
-    "id": "PHOTON-04",
-    "title": "Histogram side panel (live RGB histogram)",
-    "status": "BLOCKED",
-    "parent": null,
-    "blockedBy": ["PHOTON-03"],
+    "blockedBy": ["TRADE-01"],
     "attempts": 0,
     "testsPassed": false,
     "docsAdded": false,
-    "notes": "GUI development is paused."
+    "notes": "Implement data_sources module with MarketDataSource interface and Binance WebSocket connector"
   },
   {
-    "id": "PHOTON-05",
-    "title": "Cull stats panel",
-    "status": "BLOCKED",
+    "id": "TRADE-03",
+    "title": "Optional data connectors (Alpaca, Manifold, StockData)",
+    "status": "TODO",
     "parent": null,
-    "blockedBy": ["PHOTON-03"],
+    "blockedBy": ["TRADE-02"],
     "attempts": 0,
     "testsPassed": false,
     "docsAdded": false,
-    "notes": "GUI development is paused."
+    "notes": "Implement optional data sources for stocks, prediction markets, and low-frequency equities"
   },
   {
-    "id": "PHOTON-06",
-    "title": "Catalog change watcher (automatic refresh)",
-    "status": "DONE",
+    "id": "TRADE-04",
+    "title": "Paper broker and execution engine",
+    "status": "TODO",
     "parent": null,
-    "blockedBy": ["PHOTON-01"],
+    "blockedBy": ["TRADE-01"],
     "attempts": 0,
-    "testsPassed": true,
-    "docsAdded": true,
-    "notes": "Implemented as a CLI command to check for changes and update a timestamp file."
+    "testsPassed": false,
+    "docsAdded": false,
+    "notes": "Implement models.py, broker.py with order execution and position tracking"
   },
   {
-    "id": "PHOTON-07",
-    "title": "JSON export of rejected + kept lists",
-    "status": "DONE",
+    "id": "TRADE-05",
+    "title": "SQLite storage layer",
+    "status": "TODO",
     "parent": null,
-    "blockedBy": ["PHOTON-02"],
+    "blockedBy": ["TRADE-04"],
     "attempts": 0,
-    "testsPassed": true,
-    "docsAdded": true,
-    "notes": "Implemented as a CLI command that exports to session-summary.json."
+    "testsPassed": false,
+    "docsAdded": false,
+    "notes": "Implement storage.py for logging trades and equity snapshots"
+  },
+  {
+    "id": "TRADE-06",
+    "title": "Bot API and dynamic loader",
+    "status": "TODO",
+    "parent": null,
+    "blockedBy": ["TRADE-04"],
+    "attempts": 0,
+    "testsPassed": false,
+    "docsAdded": false,
+    "notes": "Implement BotContext and bot manager for dynamic Python bot loading"
+  },
+  {
+    "id": "TRADE-07",
+    "title": "Example bots",
+    "status": "TODO",
+    "parent": null,
+    "blockedBy": ["TRADE-06"],
+    "attempts": 0,
+    "testsPassed": false,
+    "docsAdded": false,
+    "notes": "Create example_random.py and example_trend.py bots"
+  },
+  {
+    "id": "TRADE-08",
+    "title": "Main event loop and CLI monitor",
+    "status": "TODO",
+    "parent": null,
+    "blockedBy": ["TRADE-02", "TRADE-04", "TRADE-05", "TRADE-06"],
+    "attempts": 0,
+    "testsPassed": false,
+    "docsAdded": false,
+    "notes": "Implement main.py event loop and monitor.py CLI dashboard"
+  },
+  {
+    "id": "TRADE-09",
+    "title": "End-to-end testing with live data",
+    "status": "TODO",
+    "parent": null,
+    "blockedBy": ["TRADE-08"],
+    "attempts": 0,
+    "testsPassed": false,
+    "docsAdded": false,
+    "notes": "Test complete system with Binance live data and verify PnL tracking"
   }
 ]
